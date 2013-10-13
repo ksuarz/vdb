@@ -20,8 +20,13 @@ def start():
 
 def poll():
     global VDB
-    if VDB.p.poll() is None:
+    if VDB is not None and VDB.p.poll() is None:
         print 'gdb is running!'
     else:
         print 'gdb is not running!'
+
+def read():
+    global VDB
+    for x in xrange(0, 9):
+        print VDB.p.stdout.readline(),
 EOF
