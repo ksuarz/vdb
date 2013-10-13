@@ -14,7 +14,7 @@ class VDBSession():
         """Starts a debugging session."""
         pass
 
-    def break(self, linenumber):
+    def breakpoint(self, linenumber):
         """Adds a breakpoint at the given line."""
         pass
 

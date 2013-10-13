@@ -1,2 +1,4 @@
-*.swp
+*.sw[po]
+*.pyc
+__pycache__/*
 gdb.py
