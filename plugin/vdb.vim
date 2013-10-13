@@ -51,8 +51,7 @@ function! VDBNext(type)
         py VDB.next()
     elseif a:type ==# "step"
         py VDB.step()
-    py VDB.get_response()
-
+    endif
     if g:vdb_current_line !=# 0
         exec ":sign jump 1 file=" . g:vdb_current_file
         sign unplace
@@ -64,17 +63,12 @@ function! VDBNext(type)
 endfunction
 
 function! VDBQuit()
-    wincmd J
+    wincmd j
     q
     sign unplace *
 endfunction
 
 function! VDBRun()
-python << EOF
-global VDB
-VDB.run()
-EOF
     py global VDB
     py VDB.run()
-    py VDB.get_response()
 endfunction
