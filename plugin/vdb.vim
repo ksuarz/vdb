@@ -2,6 +2,9 @@
 " Debug stuff.
 
 python << EOF
+import subprocess
+
+
 class DBSession():
     def __init__(self):
         self.p = subprocess.Popen(['gdb'],
