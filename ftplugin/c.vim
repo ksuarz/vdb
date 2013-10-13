@@ -59,9 +59,7 @@ class GDBSession(vdb.VDBSession):
         # TODO use execute2
         # self.execute('set prompt (gdb)\\n', lambda: vim.command('echo("gdb started!")'))
         # TODO check vim buffer.append that doesn't like newlines
-        response = self.execute2('set prompt (gdb)\\n')
-        for string in response.split('\n'):
-            vim.current.buffer.append(string)
+        self.execute('set prompt (gdb)\\n')
 
     def breakpoint(self, linenumber):
         """Adds a breakpoint at the specified linenumber."""
@@ -79,8 +77,9 @@ class GDBSession(vdb.VDBSession):
         allows multiple commands to be executed asynchronously, then have
         a callback function run once the command finishes.
         """
-        task = (cmd, callback, args)
-        self.cmd_queue.put(task)
+        response = self.execute2(cmd)
+        for string in response.split('\n'):
+            vim.current.buffer.append(string)
 
     def execute2(self, cmd):
         """Blocks until the last command returns."""
