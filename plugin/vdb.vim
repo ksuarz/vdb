@@ -31,6 +31,7 @@ function! VDBBreak()
     exec ":py VDB.breakpoint(int(" . linenumber . "))"
     exec ":sign place " . g:vdb_break_id . " line=" . linenumber . " name=breakpoint file=" . @%
     let g:vdb_break_id = g:vdb_break_id + 1 
+    wincmd p
 endfunction
 
 " Clears the breakpoint at the current file.
