@@ -56,9 +56,14 @@ def poll():
         print 'gdb is not running!'
 
 def read():
+    '''
+    Reads all text in the output buffer and prints it to standard output.
+    '''
     global VDB
-    for x in xrange(0, 9):
-        print VDB.read_output()
+    line = VDB.read_output()
+    while line is not None:
+        print line
+        line = VDB.read_output()
 
 def run(command):
     global VDB
