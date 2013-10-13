@@ -3,7 +3,7 @@
 
 sign define breakpoint text=!! texthl=Search
 sign define currentline text==> texthl=Search
-let g:vdb_break_id = 1
+let g:vdb_break_id = 2
 let g:vdb_next_line = 0
 let g:vdb_next_file = "/"
 let g:vdb_current_line = 0
@@ -43,9 +43,31 @@ function! VDBExecute(cmd)
     wincmd p
 endfunction
 
-function! VDBNext()
+function! VDBNext(type)
     py global VDB
-    py VDB.next()
+    if a:type ==# "next"
+        py VDB.next()
+    elseif a:type ==# "step"
+        py VDB.step()
     py VDB.get_response()
-    exec ":sign place " . g:vdb_next
+    if g:vdb_current_line !=# 0
+        exec ":sign jump 1 file=" . g:vdb_current_file
+        sign unplace
+    endif
+    exec ":sign place 1 line=" . g:vdb_next_line . " name=currentline file=" . g:vdb_next_file
+    exec ":sign jump 1 file=" . g:vdb_next_file
+    let g:vdb_current_file = g:vdb_next_file
+    let g:vdb_current_line = g:vdb_next_line
+endfunction
+
+function! VDBQuit()
+    wincmd J
+    q
+    sign unplace *
+endfunction
+
+function! VDBRun()
+    "py global VDB
+    "py VDB.run()
+    "py VDB.get_response()
 endfunction
