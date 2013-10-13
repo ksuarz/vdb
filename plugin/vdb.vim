@@ -2,23 +2,21 @@
 " Debug stuff.
 
 python << EOF
+class DBSession():
+    def __init__():
+        self.p = subprocess.Popen(['gdb'],
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT,
+                                stdin=subprocess.PIPE)
 
-import os
-import subprocess
-import system
-import vim
+VDB = None
 
-p = subprocess.Popen(['gdb', '/home/ksuarz/Programming/sorted-list/sl'],
-                     stdin=subprocess.PIPE,
-                     stdout=subprocess.PIPE,
-                     stderr=subprocess.PIPE)
+def start():
+    VDB = DBSession()
 
-out, err = p.communicate(None)
-print out
-print err
-p.terminate()
-
+def poll():
+    if VDB.p.poll() is None:
+        print 'gdb is running!'
+    else:
+        print 'gdb is not running!'
 EOF
-
-function! VDB(command)
-endfunction
