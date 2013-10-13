@@ -26,7 +26,7 @@ class DBSession():
         enqueue the text into our queue.
         """
         for line in iter(self.p.stdout.readline, b''):
-            self.queue.put(line)
+            vim.current.buffer.append(line)
         self.p.stdout.close()
 
     def read_output(self):
@@ -66,9 +66,8 @@ def read():
 
 def run(command):
     global VDB
-    VDB.p.stdin.write(command + '\n')
     vim.current.buffer.append('(gdb) ' + command)
-    read()
+    VDB.p.stdin.write(command + '\n')
 EOF
 
 function! OpenVDB()
@@ -78,5 +77,4 @@ function! OpenVDB()
     enew
     set buftype=nofile
     py start()
-    py read()
 endfunction
