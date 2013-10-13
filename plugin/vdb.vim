@@ -41,8 +41,7 @@ function! VDBExecute(cmd)
     " TODO callback and normal G
     py global VDB
     exec ":py VDB.execute(" . a:cmd . ")"
-    wincmd J
-    py VDB.get_response()
+    wincmd j
     wincmd p
 endfunction
 
