@@ -15,9 +15,11 @@ class DBSession():
 VDB = None
 
 def start():
+    global VDB
     VDB = DBSession()
 
 def poll():
+    global VDB
     if VDB.p.poll() is None:
         print 'gdb is running!'
     else:
