@@ -67,6 +67,5 @@ def run(command):
     global VDB
     VDB.p.stdin.write(command + '\n')
     print '(gdb) ' + command
-        # don't worry about this yet dawg
-    print VDB.p.stdout.readline(),
+    read()
 EOF
