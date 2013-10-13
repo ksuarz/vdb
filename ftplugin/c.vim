@@ -67,7 +67,7 @@ class GDBSession(vdb.VDBSession):
 
     def clear(self, linenumber):
         """Clears the breakpoint at the given line."""
-        self.execute('clear %d' % linenumber, lambda: vim.command('echo("Breakpoint cleared.")'))
+        self.execute('clear %d' % linenumber)
 
     def execute(self, cmd, callback=None, args=None):
         """Asynchronously executes a command in gdb, then calls the
