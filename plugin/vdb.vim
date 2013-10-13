@@ -1,4 +1,4 @@
-" vdb.vim
+" vd.vim
 " Debug stuff.
 
 sign define breakpoint text=!! texthl=Search
