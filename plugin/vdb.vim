@@ -73,7 +73,9 @@ function! VDBQuit()
     sign unplace *
 endfunction
 
-function! VDBRun()
+function! VDBRun(args)
+    wincmd j
     py global VDB
-    py VDB.run()
+    exec ":py VDB.run(\"" . a:args . "\")"
+    wincmd p
 endfunction
