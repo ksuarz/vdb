@@ -63,13 +63,7 @@ class GDBSession(vdb.VDBSession):
 
     def breakpoint(self, linenumber):
         """Adds a breakpoint at the specified linenumber."""
-        line = self.execute2('break %d' % linenumber)
-        match = self.bkpnt.search(line)
-        if match:
-            vim.command('echo \'' + line + '\'')
-            vim.command('exec ":sign place {1} line={2} name=breakpoint file=" . @%'.format(match.group('id'), linenumber))
-        else:
-            vim.command('echo \'' + line + '\'')
+        self.execute('break %d' % linenumber)
 
     def clear(self, linenumber):
         """Clears the breakpoint at the given line."""

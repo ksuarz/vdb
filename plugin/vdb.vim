@@ -4,6 +4,7 @@
 sign define breakpoint text=!! texthl=Search
 sign define currentline text==> texthl=Search
 
+let g:vdb_break_id = 2
 let g:vdb_current_file = "/"
 let g:vdb_current_line = 0
 let g:vdb_loaded_scratch = 0
@@ -27,6 +28,8 @@ function! VDBBreak()
     let linenumber = line(".")
     python global VDB
     exec ":py VDB.breakpoint(int(" . linenumber . "))"
+    exec ":sign place " . g:vdb_break_id . " line=" . linenumber . " name=breakpoint file=" . @%
+    let g:vdb_break_id = g:vdb_break_id + 1 
 endfunction
 
 " Clears the breakpoint at the current file.
