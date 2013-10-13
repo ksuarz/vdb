@@ -4,5 +4,8 @@ Use vim with your favorite debugger.
 
 Functions to Implement
 ----------------------
+- `start()`
+- `run()`
 - `eval()`, akin to gdb's `print`
-- `set_breakpoint()`
+- `break()`
+- `clear()`
