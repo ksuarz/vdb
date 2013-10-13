@@ -32,7 +32,7 @@ class GDBSession(vdb.VDBSession):
 
         # Regular expressions - don't try this at home
         self.where = re.compile(r'.* at (?P<file>.+):(?P<line>\d+)$', re.M)
-        self.breakpoint = re.compile(r'^Breakpoint (P<id>\d+)\s.*$', re.M)
+        self.bkpnt = re.compile(r'^Breakpoint (P<id>\d+)\s.*$', re.M)
         self.clear = re.compile(r'Deleted breakpoint.*(P<id>\d+).*$', re.M)
 
     def begin(self):
@@ -56,17 +56,22 @@ class GDBSession(vdb.VDBSession):
         self.ready = True
 
         # Finally, start gdb and throw away the 
-        self.execute('set prompt (gdb)\\n', lambda: vim.command('echo("gdb started!")'))
+        # TODO use execute2
+        # self.execute('set prompt (gdb)\\n', lambda: vim.command('echo("gdb started!")'))
+        # TODO check vim buffer.append that doesn't like newlines
+        response = self.execute2('set prompt (gdb)\\n')
+        for string in response.split('\n'):
+            vim.current.buffer.append(string)
 
     def breakpoint(self, linenumber):
         """Adds a breakpoint at the specified linenumber."""
-        self.execute('break %d' % linenumber, lambda: vim.command('echo("Breakpoint added.")'))
+        self.execute('break %d' % linenumber, self._callback_set_breaksign)
 
     def clear(self, linenumber):
         """Clears the breakpoint at the given line."""
         self.execute('clear %d' % linenumber, lambda: vim.command('echo("Breakpoint cleared.")'))
 
-    def execute(self, cmd, callback=None):
+    def execute(self, cmd, callback=None, args=None):
         """Asynchronously executes a command in gdb, then calls the
         callback function if specified.
         
@@ -74,8 +79,22 @@ class GDBSession(vdb.VDBSession):
         allows multiple commands to be executed asynchronously, then have
         a callback function run once the command finishes.
         """
-        task = (cmd, callback)
+        task = (cmd, callback, args)
         self.cmd_queue.put(task)
+
+    def execute2(self, cmd):
+        """Blocks until the last command returns."""
+        while not self.ready:
+            time.sleep(0.1)
+
+        self.ready = False
+        self.p.stdin.write(cmd + '\n')
+
+        while not self.ready:
+            time.sleep(0.1)
+        
+        return self.get_response_as_string()
+
 
     def get_line(self):
         """Returns lines from the queue, possibly one at a time."""
@@ -96,6 +115,7 @@ class GDBSession(vdb.VDBSession):
         while line is not None:
             output.append(line)
             line = self.get_line()
+            # TODO vim doesn't like newlines
         vim.current.buffer.append(''.join(output))
 
     def get_response_as_string(self):
@@ -110,7 +130,7 @@ class GDBSession(vdb.VDBSession):
 
     def set_globals(self):
         """Sets important global variables in Vim."""
-        self.execute('where', self._callback_set_linenumber)
+        self.execute('where', self._callback_set_linenumber, linenumber)
 
     def next(self):
         """Runs the next line."""
@@ -143,14 +163,25 @@ class GDBSession(vdb.VDBSession):
             vim.command('let g:vdb_current_line = 0')
             vim.command('let g:vdb_current_line = "/"')
 
-    def _callback_set_breaksign(self, linenumber):
+    def _callback_set_breaksign(self):
         """Callback that sets a sign at the given linenumber."""
+        linenumber = 100
+        line = self.get_response_as_string()
+        match = self.bkpnt.search(line)
+        if match:
+            vim.command('exec ":sign place {1} line={2} name=breakpoint file=" . @%'.format(match.group('id'), linenumber))
+        else:
+            vim.command('echo "Adding the breakpoint failed."')
+
+    def _callback_see_output(self):
+        vim.command('wincmd j')
+
 
     def _execute_commands(self):
         """Code for a daemon that executes our commands."""
         while True:
             next = self.cmd_queue.get()
-            cmd, callback = next[0], next[1]
+            cmd, callback, args = next[0], next[1], next[2]
 
             # First, wait for our turn and block
             while not self.ready:
@@ -164,7 +195,10 @@ class GDBSession(vdb.VDBSession):
             if callback is not None:
                 while not self.ready:
                     time.sleep(0.1)
-                callback()
+                if args is None:
+                    callback()
+                else:
+                    callback(args)
 
     def _queue_output(self):
         """Code for a daemon that constantly reads from stdout.
@@ -178,6 +212,16 @@ class GDBSession(vdb.VDBSession):
                 self.ready = True
         self.p.stdout.close()
 
+    def _scratch_output(self):
+        """Dumps the content of the output buffer into the scratch space."""
+
 
 VDB = GDBSession()
 EOF
+
+
+
+
+
+
+

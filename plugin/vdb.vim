@@ -3,10 +3,12 @@
 
 sign define breakpoint text=!! texthl=Search
 sign define currentline text==> texthl=Search
-let g:vdb_next_line = 0
-let g:vdb_next_file = "/"
-let g:vdb_current_line = 0
+
 let g:vdb_current_file = "/"
+let g:vdb_current_line = 0
+let g:vdb_loaded_scratch = 0
+let g:vdb_next_file = "/"
+let g:vdb_next_line = 0
 
 " Begins a new VDB, spawning an instance of the debugger in the background.
 function! VDBStart()
@@ -25,7 +27,6 @@ function! VDBBreak()
     let linenumber = line(".")
     python global VDB
     exec ":py VDB.breakpoint(int(" . linenumber . "))"
-    exec ":sign place " . g:vdb_break_id . " line=" . linenumber . " name=breakpoint file=" . @%
 endfunction
 
 " Clears the breakpoint at the current file.
@@ -37,7 +38,7 @@ function! VDBClear()
 endfunction
 
 function! VDBExecute(cmd)
-    " TODO callback
+    " TODO callback and normal G
     py global VDB
     exec ":py VDB.execute(" . a:cmd . ")"
     wincmd J
@@ -70,6 +71,10 @@ function! VDBQuit()
 endfunction
 
 function! VDBRun()
+python << EOF
+global VDB
+VDB.run()
+EOF
     py global VDB
     py VDB.run()
     py VDB.get_response()
