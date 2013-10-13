@@ -45,14 +45,14 @@ VDB = None
 
 def start():
     global VDB
-    VDB = DBSession()
+    if VDB is None:
+        VDB = DBSession()
 
 def poll():
     global VDB
     if VDB is not None and VDB.p.poll() is None:
-        print 'gdb is running!'
-    else:
-        print 'gdb is not running!'
+        return True
+    return False
 
 def read():
     """Reads all text in the output buffer and prints
@@ -70,3 +70,13 @@ def run(command):
     vim.current.buffer.append('(gdb) ' + command)
     read()
 EOF
+
+function! OpenVDB()
+    split
+    wincmd j
+    wincmd J
+    enew
+    set buftype=nofile
+    py start()
+    py read()
+endfunction
