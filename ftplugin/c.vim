@@ -1,9 +1,12 @@
+" c.vim - Python code for interacting with gdb.
+" Known issues/bugs:
+" - Don't try setting a breakpoint at a nonexistent line.
+" - Don't put multiple breakpoints on one line
+
 python << EOF
 from __future__ import print_function
 from Queue import Queue, Empty
 from threading import Thread
-
-# TODO the prompt thing is not working properly
 
 import re
 import subprocess
@@ -17,6 +20,7 @@ import vdb
 class GDBSession(vdb.VDBSession):
     def __init__(self):
         """Sets up a gdb session."""
+        # Queues, daemons, and other global variables
         self.cmd_queue = None
         self.enqueuer = None
         self.executor = None
@@ -25,9 +29,14 @@ class GDBSession(vdb.VDBSession):
         self.ps1 = '(gdb)'
         self.ready = False
 
+        # Regular expressions - don't try this at home
+        self.where = re.compile(r'.* at (?P<file>.+):(?P<line>\d+)$', re.M)
+        self.breakpoint = re.compile(r'^Breakpoint (P<id>\d+)\s.*$', re.M)
+        self.clear = re.compile(r'Deleted breakpoint.*(P<id>\d+).*$', re.M)
+
     def begin(self):
         """Starts a gdb session in the background."""
-        self.p = subprocess.Popen(['gdb'],
+        self.p = subprocess.Popen(['gdb', '/home/ksuarz/Programming/tokenizer/tokenizer'],
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT,
                                 stdin=subprocess.PIPE)
@@ -46,15 +55,15 @@ class GDBSession(vdb.VDBSession):
         self.ready = True
 
         # Finally, start gdb and throw away the 
-        self.execute('set prompt (gdb)\\n')
+        self.execute('set prompt (gdb)\\n', lambda: vim.command('echo("gdb started!")'))
 
     def breakpoint(self, linenumber):
         """Adds a breakpoint at the specified linenumber."""
-        self.execute('break %d' % linenumber, lambda: print('Breakpoint added.'))
+        self.execute('break %d' % linenumber, lambda: vim.command('echo("Breakpoint added.")'))
 
     def clear(self, linenumber):
         """Clears the breakpoint at the given line."""
-        self.execute('clear %d' % linenumber, lambda: print('Breakpoint cleared.'))
+        self.execute('clear %d' % linenumber, lambda: vim.command('echo("Breakpoint cleared.")'))
 
     def execute(self, cmd, callback=None):
         """Asynchronously executes a command in gdb, then calls the
@@ -79,15 +88,28 @@ class GDBSession(vdb.VDBSession):
             return line
 
     def get_response(self):
-        """Returns a string with the latest debugger output, or None if
-        nothing is in the queue.
-        """
+        """Writes the latest debugger output to the current buffer; if
+        nothing is in the queue, nothing happens."""
+        output = []
+        line = self.get_line()
+        while line is not None:
+            output.append(line)
+            line = self.get_line()
+        vim.current.buffer.append(''.join(output))
+
+    def get_response_as_string(self):
+        """Returns the latest debugger output as a string, or None if
+        nothing is in the queue."""
         output = []
         line = self.get_line()
         while line is not None:
             output.append(line)
             line = self.get_line()
         return ''.join(output)
+
+    def set_globals(self):
+        """Sets important global variables in Vim."""
+        self.execute('where', self._callback_set_linenumber)
 
     def next(self):
         """Runs the next line."""
@@ -109,24 +131,39 @@ class GDBSession(vdb.VDBSession):
         """Steps into the next function call."""
         self.execute('step', lambda: print(self.get_output()))
 
+    def _callback_set_currents(self):
+        """Callback that sets the current filename and line number."""
+        line = self.get_response_as_string()
+        match = self.where.search(line)
+        if match:
+            vim.command('let g:vdb_current_line = ' + match.group('line'))
+            vim.command('let g:vdb_current_file = ' + match.group('file'))
+        else:
+            vim.command('let g:vdb_current_line = 0')
+            vim.command('let g:vdb_current_line = "/"')
+
+    def _callback_set_breaksign(self, linenumber):
+        """Callback that sets a sign at the given linenumber."""
+
     def _execute_commands(self):
         """Code for a daemon that executes our commands."""
-        next = self.cmd_queue.get()
-        cmd, callback = next[0], next[1]
+        while True:
+            next = self.cmd_queue.get()
+            cmd, callback = next[0], next[1]
 
-        # First, wait for our turn and block
-        while not self.ready:
-            time.sleep(0.1)
-
-        # Execute
-        self.ready = False
-        self.p.stdin.write(cmd + '\n')
-
-        # Wait until it's finished, then run the callback
-        if callback is not None:
+            # First, wait for our turn and block
             while not self.ready:
                 time.sleep(0.1)
-            callback()
+
+            # Execute
+            self.ready = False
+            self.p.stdin.write(cmd + '\n')
+
+            # Wait until it's finished, then run the callback
+            if callback is not None:
+                while not self.ready:
+                    time.sleep(0.1)
+                callback()
 
     def _queue_output(self):
         """Code for a daemon that constantly reads from stdout.

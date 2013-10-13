@@ -3,43 +3,47 @@
 
 sign define breakpoint text=!! texthl=Search
 sign define currentline text==> texthl=Search
-let g:vdb_break_id = 2
 let g:vdb_next_line = 0
 let g:vdb_next_file = "/"
 let g:vdb_current_line = 0
 let g:vdb_current_file = "/"
 
+" Begins a new VDB, spawning an instance of the debugger in the background.
 function! VDBStart()
     split
     wincmd j
     wincmd J
     enew
     set buftype=nofile
-    "py global VDB
-    "py VDB.start()
+python << EOF
+    global VDB
+    VDB.begin()
+EOF
     wincmd p
 endfunction
 
+" Adds a breakpoint at the current line.
 function! VDBBreak()
     let linenumber = line(".")
-    "py global VDB
-    "exec ":py VDB.break(int(" . linenumber . "))"
+    python global VDB
+    exec ":py VDB.breakpoint(int(" . linenumber . "))"
     exec ":sign place " . g:vdb_break_id . " line=" . linenumber . " name=breakpoint file=" . @%
-    let g:vdb_break_id = g:break_id + 1
 endfunction
 
+" Clears the breakpoint at the current file.
 function! VDBClear()
     let linenumber = line(".")
-    "py global VDB
-    "exec ":py VDB.clear(int(" . linenumber . "))"
+    py global VDB
+    exec ":py VDB.clear(int(" . linenumber . "))"
     sign unplace
 endfunction
 
 function! VDBExecute(cmd)
-    "py global VDB
-    "exec ":py VDB.execute(" . a:cmd . ")"
+    " TODO callback
+    py global VDB
+    exec ":py VDB.execute(" . a:cmd . ")"
     wincmd J
-    "py VDB.get_response()
+    py VDB.get_response()
     wincmd p
 endfunction
 
@@ -50,6 +54,7 @@ function! VDBNext(type)
     elseif a:type ==# "step"
         py VDB.step()
     py VDB.get_response()
+
     if g:vdb_current_line !=# 0
         exec ":sign jump 1 file=" . g:vdb_current_file
         sign unplace
@@ -67,7 +72,7 @@ function! VDBQuit()
 endfunction
 
 function! VDBRun()
-    "py global VDB
-    "py VDB.run()
-    "py VDB.get_response()
+    py global VDB
+    py VDB.run()
+    py VDB.get_response()
 endfunction
