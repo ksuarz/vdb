@@ -2,7 +2,12 @@
 " Debug stuff.
 
 sign define breakpoint text=!! texthl=Search
+sign define currentline text==> texthl=Search
 let g:vdb_break_id = 1
+let g:vdb_next_line = 0
+let g:vdb_next_file = "/"
+let g:vdb_current_line = 0
+let g:vdb_current_file = "/"
 
 function! VDBStart()
     split
@@ -36,4 +41,11 @@ function! VDBExecute(cmd)
     wincmd J
     "py VDB.get_response()
     wincmd p
+endfunction
+
+function! VDBNext()
+    py global VDB
+    py VDB.next()
+    py VDB.get_response()
+    exec ":sign place " . g:vdb_next
 endfunction
