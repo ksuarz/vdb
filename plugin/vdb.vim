@@ -29,4 +29,10 @@ def read():
     global VDB
     for x in xrange(0, 9):
         print VDB.p.stdout.readline(),
+
+def run(command):
+    global VDB
+    VDB.p.stdin.write(command + '\n')
+    print '(gdb) ' + command
+    print VDB.p.stdout.readline(),
 EOF
