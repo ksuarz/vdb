@@ -32,7 +32,7 @@ class GDBSession(vdb.VDBSession):
 
         # Regular expressions - don't try this at home
         self.where = re.compile(r'.* at (?P<file>.+):(?P<line>\d+)$', re.M)
-        self.bkpnt = re.compile(r'^Breakpoint (P<id>\d+)\s.*$', re.M)
+        self.bkpnt = re.compile(r'^Breakpoint (P<id>\d+).*$', re.M | re.I)
         self.clear = re.compile(r'Deleted breakpoint.*(P<id>\d+).*$', re.M)
 
     def begin(self):
@@ -63,7 +63,13 @@ class GDBSession(vdb.VDBSession):
 
     def breakpoint(self, linenumber):
         """Adds a breakpoint at the specified linenumber."""
-        self.execute('break %d' % linenumber, self._callback_set_breaksign)
+        line = self.execute2('break %d' % linenumber)
+        match = self.bkpnt.search(line)
+        if match:
+            vim.command('echo \'' + line + '\'')
+            vim.command('exec ":sign place {1} line={2} name=breakpoint file=" . @%'.format(match.group('id'), linenumber))
+        else:
+            vim.command('echo \'' + line + '\'')
 
     def clear(self, linenumber):
         """Clears the breakpoint at the given line."""
@@ -109,13 +115,10 @@ class GDBSession(vdb.VDBSession):
     def get_response(self):
         """Writes the latest debugger output to the current buffer; if
         nothing is in the queue, nothing happens."""
-        output = []
         line = self.get_line()
         while line is not None:
-            output.append(line)
+            vim.current.buffer.append(line)
             line = self.get_line()
-            # TODO vim doesn't like newlines
-        vim.current.buffer.append(''.join(output))
 
     def get_response_as_string(self):
         """Returns the latest debugger output as a string, or None if
@@ -151,31 +154,6 @@ class GDBSession(vdb.VDBSession):
         """Steps into the next function call."""
         self.execute('step', lambda: print(self.get_output()))
 
-    def _callback_set_currents(self):
-        """Callback that sets the current filename and line number."""
-        line = self.get_response_as_string()
-        match = self.where.search(line)
-        if match:
-            vim.command('let g:vdb_current_line = ' + match.group('line'))
-            vim.command('let g:vdb_current_file = ' + match.group('file'))
-        else:
-            vim.command('let g:vdb_current_line = 0')
-            vim.command('let g:vdb_current_line = "/"')
-
-    def _callback_set_breaksign(self):
-        """Callback that sets a sign at the given linenumber."""
-        linenumber = 100
-        line = self.get_response_as_string()
-        match = self.bkpnt.search(line)
-        if match:
-            vim.command('exec ":sign place {1} line={2} name=breakpoint file=" . @%'.format(match.group('id'), linenumber))
-        else:
-            vim.command('echo "Adding the breakpoint failed."')
-
-    def _callback_see_output(self):
-        vim.command('wincmd j')
-
-
     def _execute_commands(self):
         """Code for a daemon that executes our commands."""
         while True:
@@ -210,10 +188,6 @@ class GDBSession(vdb.VDBSession):
             if self.ps1 in line:
                 self.ready = True
         self.p.stdout.close()
-
-    def _scratch_output(self):
-        """Dumps the content of the output buffer into the scratch space."""
-
 
 VDB = GDBSession()
 EOF
