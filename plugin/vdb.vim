@@ -3,7 +3,7 @@
 
 python << EOF
 class DBSession():
-    def __init__():
+    def __init__(self):
         self.p = subprocess.Popen(['gdb'],
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT,
