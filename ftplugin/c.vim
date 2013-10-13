@@ -67,7 +67,7 @@ class GDBSession(vdb.VDBSession):
 
     def clear(self, linenumber):
         """Clears the breakpoint at the given line."""
-        self.execute('clear %d' % linenumber, lambda: vim.command('echo("Breakpoint cleared.")'))
+        self.execute('clear %d' % linenumber)
 
     def execute(self, cmd, callback=None, args=None):
         """Asynchronously executes a command in gdb, then calls the
@@ -126,7 +126,14 @@ class GDBSession(vdb.VDBSession):
 
     def set_globals(self):
         """Sets important global variables in Vim."""
-        self.execute('where', self._callback_set_linenumber, linenumber)
+        line = self.execute2('where')
+        match = self.where.search(line)
+        if match:
+            vim.command('let g:vdb_current_line = ' + match.group('line'))
+            vim.command('let g:vdb_current_file = ' + match.group('file'))
+        else:
+            vim.command('let g:vdb_current_line = 0')
+            vim.command('let g:vdb_current_line = "/"')
 
     def next(self):
         """Runs the next line."""
@@ -146,7 +153,7 @@ class GDBSession(vdb.VDBSession):
 
     def step(self):
         """Steps into the next function call."""
-        self.execute('step', lambda: print(self.get_output()))
+        self.execute('step')
 
     def _execute_commands(self):
         """Code for a daemon that executes our commands."""
@@ -169,6 +176,7 @@ class GDBSession(vdb.VDBSession):
                 if args is None:
                     callback()
                 else:
+                    # TODO should expand args
                     callback(args)
 
     def _queue_output(self):
@@ -185,10 +193,3 @@ class GDBSession(vdb.VDBSession):
 
 VDB = GDBSession()
 EOF
-
-
-
-
-
-
-
