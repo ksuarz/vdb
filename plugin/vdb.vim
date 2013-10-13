@@ -52,11 +52,13 @@ endfunction
 
 function! VDBNext(type)
     py global VDB
+    wincmd j
     if a:type ==# "next"
         py VDB.next()
     elseif a:type ==# "step"
         py VDB.step()
     endif
+    wincmd p
     if g:vdb_current_line !=# 0
         exec ":sign jump 1 file=" . g:vdb_current_file
         sign unplace
