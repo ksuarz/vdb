@@ -19,21 +19,19 @@ class DBSession():
         self.daemon.start()
 
     def _queue_output(self):
-        '''
-        Code for a daemon that constantly reads from stdout.
+        """Code for a daemon that constantly reads from stdout.
 
-        Reads from stdout, blocking if necessary. If we detect output, enqueue
-        the text into our queue.
-        '''
+        Reads from stdout, blocking if necessary. If we detect output,
+        enqueue the text into our queue.
+        """
         for line in iter(self.p.stdout.readline, b''):
             self.queue.put(line)
         self.p.stdout.close()
 
     def read_output(self):
-        '''
-        Reads from stdout of gdb, returning a newline-terminated line or None
-        if nothing is in the output queue.
-        '''
+        """Reads from stdout of gdb, returning a newline-terminated
+        line or None if nothing is in the output queue.
+        """
         try:
             line = self.queue.get_nowait()
         except Empty:
@@ -56,9 +54,9 @@ def poll():
         print 'gdb is not running!'
 
 def read():
-    '''
-    Reads all text in the output buffer and prints it to standard output.
-    '''
+    """Reads all text in the output buffer and prints
+    it to standard output.
+    """
     global VDB
     line = VDB.read_output()
     while line is not None:
