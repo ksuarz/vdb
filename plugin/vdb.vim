@@ -26,7 +26,7 @@ class DBSession():
         enqueue the text into our queue.
         """
         for line in iter(self.p.stdout.readline, b''):
-            vim.current.buffer.append(line)
+            self.queue.put(line)
         self.p.stdout.close()
 
     def read_output(self):
