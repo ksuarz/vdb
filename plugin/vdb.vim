@@ -26,6 +26,7 @@ endfunction
 " Adds a breakpoint at the current line.
 function! VDBBreak()
     let linenumber = line(".")
+    wincmd j
     python global VDB
     exec ":py VDB.breakpoint(int(" . linenumber . "))"
     exec ":sign place " . g:vdb_break_id . " line=" . linenumber . " name=breakpoint file=" . @%
