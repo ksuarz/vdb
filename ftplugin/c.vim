@@ -37,7 +37,7 @@ class GDBSession(vdb.VDBSession):
 
     def begin(self):
         """Starts a gdb session in the background."""
-        self.p = subprocess.Popen(['gdb', '/home/ksuarz/Programming/tokenizer/tokenizer'],
+        self.p = subprocess.Popen(['gdb'],
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT,
                                 stdin=subprocess.PIPE)
