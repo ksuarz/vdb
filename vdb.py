@@ -10,6 +10,10 @@ class VDBSession():
     def __init__(self):
         pass
 
+    def begin(self):
+        """Starts a debugging session."""
+        pass
+
     def break(self, linenumber):
         """Adds a breakpoint at the given line."""
         pass
@@ -18,7 +22,7 @@ class VDBSession():
         """Clears the breakpoint at the given line."""
         pass
 
-    def execute(self, cmd):
+    def execute(self, cmd, callback=None):
         """Executes the command in the debugger."""
         pass
 
@@ -36,10 +40,6 @@ class VDBSession():
 
     def run(self, filename):
         """Runs the debugger."""
-        pass
-
-    def start(self):
-        """Starts a debugging session."""
         pass
 
     def step(self):
