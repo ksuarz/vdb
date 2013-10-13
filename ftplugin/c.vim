@@ -11,10 +11,11 @@ from threading import Thread
 import re
 import subprocess
 import sys
+import os
 import time
 import vim
 
-sys.path.insert(0, '../')
+sys.path.insert(0, os.path.expanduser('~/.vim/bundle/vdb'))
 import vdb
 
 class GDBSession(vdb.VDBSession):
