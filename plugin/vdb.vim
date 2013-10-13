@@ -15,10 +15,8 @@ function! VDBStart()
     wincmd J
     enew
     set buftype=nofile
-python << EOF
-    global VDB
-    VDB.begin()
-EOF
+    py global VDB
+    py VDB.begin()
     wincmd p
 endfunction
 
