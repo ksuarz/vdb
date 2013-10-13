@@ -140,9 +140,9 @@ class GDBSession(vdb.VDBSession):
         self.msg_queue = None
         self.ready = False
 
-    def run(self):
+    def run(self, args):
         """Runs the debugger."""
-        self.execute('run')
+        self.execute('run ' + args)
 
     def step(self):
         """Steps into the next function call."""
