@@ -60,12 +60,12 @@ def read():
     global VDB
     line = VDB.read_output()
     while line is not None:
-        print line
+        vim.current.buffer.append(line)
         line = VDB.read_output()
 
 def run(command):
     global VDB
     VDB.p.stdin.write(command + '\n')
-    print '(gdb) ' + command
+    vim.current.buffer.append('(gdb) ' + command)
     read()
 EOF
