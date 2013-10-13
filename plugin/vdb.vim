@@ -3,6 +3,7 @@
 
 python << EOF
 import subprocess
+import vim
 
 from Queue import Queue, Empty
 from threading import Thread
