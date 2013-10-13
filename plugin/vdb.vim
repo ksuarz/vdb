@@ -40,7 +40,7 @@ endfunction
 function! VDBExecute(cmd)
     " TODO callback and normal G
     py global VDB
-    exec ":py VDB.execute(" . a:cmd . ")"
+    exec ":py VDB.execute(\"" . a:cmd . "\")"
     wincmd j
     wincmd p
 endfunction
