@@ -1,5 +1,11 @@
 " vd.vim
 " Debug stuff.
+python << EOF
+import sys
+import os
+sys.path.insert(0, os.path.expanduser('~/.vim/bundle/vdb'))
+import vdb
+EOF
 
 sign define breakpoint text=!! texthl=Search
 sign define currentline text==> texthl=Search
