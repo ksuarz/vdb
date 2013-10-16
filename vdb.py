@@ -1,30 +1,41 @@
 """
 vdb.py - The public API for the Vim debugger.
 
-Implement these methods and shove your file in the ftplugin folder for your
-language-specific debugger.
+Implement these methods and shove your file
+in the ftplugin folder for your language-specific debugger.
+
+This base class is used for testing, so if you don't implement
+a certain method, it will still work
 """
+import vim
+
 
 class VDBSession():
     """The abstract API for Vim debugging sessions."""
     def __init__(self):
-        pass
+        self.prompt = "(vdb)"
 
     def begin(self):
         """Starts a debugging session."""
-        pass
+        self.execute("start")
+        self.output("vdb started!")
 
     def breakpoint(self, linenumber):
         """Adds a breakpoint at the given line."""
-        pass
+        self.execute("break " + linenumber)
+        output_string = "Breakpoint set at {0}".format(linenumber)
+        self.output(output_string)
 
     def clear(self, linenumber):
         """Clears the breakpoint at the given line."""
-        pass
+        self.execute("clear " + linenumber)
+        output_string = "Breakpoint cleared at {0}".format(linenumber)
+        self.output(output_string)
 
-    def execute(self, cmd, callback=None):
+    def execute(self, cmd):
         """Executes the command in the debugger."""
-        pass
+        output_string = "{0} {1}".format(self.prompt, cmd)
+        self.output(output_string)
 
     def get_response(self):
         """Returns a string with the latest debugger output."""
@@ -32,17 +43,21 @@ class VDBSession():
 
     def next(self):
         """Runs the next line."""
-        pass
+        self.execute("next")
 
     def quit(self):
         """Quits the debug session cleanly."""
-        pass
+        self.execute("quit")
+        self.output("Shutting down...")
 
     def run(self, filename):
         """Runs the debugger."""
-        pass
+        self.execute("run")
+        self.output("Running the application")
 
     def step(self):
         """Steps into the next function call."""
-        pass
+        self.run("step")
 
+    def output(self, output_string):
+        vim.current.buffer.append(output_string)
