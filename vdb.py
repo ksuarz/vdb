@@ -22,13 +22,13 @@ class VDBSession():
 
     def breakpoint(self, linenumber):
         """Adds a breakpoint at the given line."""
-        self.execute("break " + linenumber)
+        self.execute("break " + str(linenumber))
         output_string = "Breakpoint set at {0}".format(linenumber)
         self.output(output_string)
 
     def clear(self, linenumber):
         """Clears the breakpoint at the given line."""
-        self.execute("clear " + linenumber)
+        self.execute("clear " + str(linenumber))
         output_string = "Breakpoint cleared at {0}".format(linenumber)
         self.output(output_string)
 

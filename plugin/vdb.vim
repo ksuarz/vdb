@@ -1,4 +1,4 @@
-" vd.vim
+" vdb.vim
 " Debug stuff.
 python << EOF
 import sys
